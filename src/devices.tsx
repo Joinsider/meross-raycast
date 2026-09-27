@@ -1,40 +1,13 @@
-import {
-  Action,
-  ActionPanel,
-  Color,
-  Form,
-  Icon,
-  LaunchType,
-  List,
-  openExtensionPreferences,
-  Keyboard,
-} from "@raycast/api";
+import { Action, ActionPanel, Color, Icon, LaunchType, List, openExtensionPreferences, Keyboard } from "@raycast/api";
 import { createDeeplink, showFailureToast, useCachedPromise } from "@raycast/utils";
-import { useEffect, useRef, useState } from "react";
-import { MerossSession, MfaRequiredError, type Target } from "./lib/meross";
+import { useState } from "react";
+import { MfaRequiredError, type Target } from "./lib/meross";
+import { MfaForm } from "./lib/mfa-form";
+import { getSession } from "./lib/session";
 import { applyPower, stateIcon, stateLabel } from "./lib/ui";
 
 export default function Command() {
   const [mfaCode, setMfaCode] = useState<string>();
-  const sessionRef = useRef<Promise<MerossSession> | null>(null);
-
-  function getSession(code?: string) {
-    if (!sessionRef.current) {
-      const opening = MerossSession.open({ mfaCode: code });
-      opening.catch(() => {
-        if (sessionRef.current === opening) sessionRef.current = null;
-      });
-      sessionRef.current = opening;
-    }
-    return sessionRef.current;
-  }
-
-  useEffect(
-    () => () => {
-      sessionRef.current?.then((session) => session.close()).catch(() => undefined);
-    },
-    [],
-  );
 
   const { data, isLoading, error, revalidate, mutate } = useCachedPromise(
     async (code?: string) => (await getSession(code)).targets(),
@@ -104,7 +77,7 @@ export default function Command() {
                     quicklink={{
                       name: `Toggle ${target.title}`,
                       link: createDeeplink({
-                        command: "toggle-device",
+                        command: "switch-device",
                         launchType: LaunchType.Background,
                         arguments: { device: target.title, action: "toggle" },
                       }),
@@ -127,23 +100,5 @@ export default function Command() {
         />
       ))}
     </List>
-  );
-}
-
-function MfaForm(props: { message: string; onSubmit: (code: string) => void }) {
-  return (
-    <Form
-      actions={
-        <ActionPanel>
-          <Action.SubmitForm
-            title="Log in"
-            onSubmit={(values: { code: string }) => props.onSubmit(values.code.trim())}
-          />
-        </ActionPanel>
-      }
-    >
-      <Form.Description title="Two-Factor Authentication" text={props.message} />
-      <Form.TextField id="code" title="MFA Code" placeholder="123456" autoFocus />
-    </Form>
   );
 }

@@ -4,7 +4,7 @@ import { findTarget, MfaRequiredError, withSession } from "./lib/meross";
 
 type Action = "toggle" | "on" | "off";
 
-export default async function Command(props: LaunchProps<{ arguments: Arguments.ToggleDevice }>) {
+export default async function Command(props: LaunchProps<{ arguments: Arguments.SwitchDevice }>) {
   const query = props.arguments.device.trim();
   const action = (props.arguments.action || "toggle") as Action;
   const q = query.toLowerCase();

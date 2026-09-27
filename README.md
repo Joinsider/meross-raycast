@@ -7,7 +7,8 @@ Control Meross smart plugs and power strips from Raycast, built on the unofficia
 | Command | Mode | What it does |
 | --- | --- | --- |
 | **Search Devices** | view | Lists all plugs (and each outlet of a power strip) with their on/off state. Toggle with ↵, copy UUID/IP, or create a quicklink you can bind to a hotkey. |
-| **Toggle Device** | no-view | Switches a device by name. Arguments: device name, action (`toggle` / `on` / `off`). |
+| **Toggle Device** | view | Pick an online device (type to filter) and toggle it with ↵; Raycast closes and shows a HUD. Optional argument pre-fills the filter. |
+| **Switch Device by Name** | no-view | Switches a device by name without opening a window — used by hotkeys and the quicklinks created from Search Devices. Arguments: device name, action (`toggle` / `on` / `off`). |
 | **Menu Bar Devices** | menu-bar | Shows how many plugs are on and toggles them from the menu bar. Refreshes every 10 minutes. |
 | **Log out** | no-view | Ends the Meross cloud session and removes the stored token. |
 

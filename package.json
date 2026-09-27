@@ -25,7 +25,22 @@
       "name": "toggle-device",
       "title": "Toggle Device",
       "subtitle": "Meross",
-      "description": "Switch a plug by name, e.g. for a hotkey or quicklink",
+      "description": "Pick an online plug and toggle it",
+      "mode": "view",
+      "arguments": [
+        {
+          "name": "device",
+          "placeholder": "Filter",
+          "type": "text",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "switch-device",
+      "title": "Switch Device by Name",
+      "subtitle": "Meross",
+      "description": "Switch a plug by its exact name, without opening a window (for hotkeys and quicklinks)",
       "mode": "no-view",
       "arguments": [
         {

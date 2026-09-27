@@ -114,6 +114,9 @@ export class MerossSession {
 
     const entries = new Map<string, DeviceEntry>();
     cloud.on("deviceInitialized", (uuid, def, device) => entries.set(uuid, { def, device }));
+    // Messages sent before the MQTT connection is up carry no response topic, so devices never answer.
+    // meross-cloud emits "connected" only after it has set that topic; listen before connect() to not miss it.
+    const mqttReady = new Promise<void>((resolve) => (cloud as EventEmitter).once("connected", () => resolve()));
 
     try {
       await withTimeout(
@@ -128,6 +131,15 @@ export class MerossSession {
     }
     await saveTokenData(cloud, email, password);
 
+    if (entries.size > 0) {
+      try {
+        await withTimeout(mqttReady, 10000, "Meross MQTT connection");
+      } catch (error) {
+        // Local HTTP may still work, so continue and let the single requests fail if it doesn't.
+        console.error(error);
+      }
+    }
+
     const knownIps = await LocalStorage.allItems<Record<string, string>>();
     for (const [uuid, { device }] of entries) {
       const ip = knownIps[ipKey(uuid)];
@@ -140,12 +152,13 @@ export class MerossSession {
   async targets(only?: (def: DeviceDefinition) => boolean): Promise<Target[]> {
     const entries = [...this.entries.values()].filter((entry) => !only || only(entry.def));
     const perDevice = await Promise.all(entries.map((entry) => this.deviceTargets(entry)));
-    return perDevice.flat().sort((a, b) => a.title.localeCompare(b.title));
+    return perDevice.flat().sort((a, b) => Number(b.online) - Number(a.online) || a.title.localeCompare(b.title));
   }
 
   private async deviceTargets({ def, device }: DeviceEntry): Promise<Target[]> {
     const online = def.onlineStatus === 1;
-    let mode: SwitchMode = "unsupported";
+    // Assume ToggleX (what current plugs use) unless the device tells us otherwise.
+    let mode: SwitchMode = "togglex";
     let states = new Map<number, boolean>();
     let ip: string | undefined;
 
@@ -160,6 +173,8 @@ export class MerossSession {
         } else if (data.all?.control?.toggle) {
           mode = "toggle";
           states.set(0, data.all.control.toggle.onoff === 1);
+        } else {
+          mode = "unsupported";
         }
         if (ip) {
           device.setKnownLocalIp(ip);
