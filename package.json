@@ -9,6 +9,13 @@
     "Applications",
     "Productivity"
   ],
+  "keywords": [
+    "meross",
+    "smart plug",
+    "smart home",
+    "power strip",
+    "switch"
+  ],
   "license": "MIT",
   "platforms": [
     "macOS"

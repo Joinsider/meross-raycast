@@ -1,4 +1,4 @@
-import { environment, getPreferenceValues, LocalStorage } from "@raycast/api";
+import { getPreferenceValues, LocalStorage } from "@raycast/api";
 import { createHash } from "crypto";
 import type { EventEmitter } from "events";
 import MerossCloud, { type DeviceDefinition, type MerossCloudDevice, type TokenData } from "meross-cloud";
@@ -105,7 +105,6 @@ export class MerossSession {
       localHttpFirst,
       onlyLocalForGet: false,
       timeout: REQUEST_TIMEOUT_MS,
-      logger: environment.isDevelopment ? console.log : undefined,
     });
     // Without a listener, EventEmitter would throw on MQTT errors and crash the command.
     (cloud as EventEmitter).on("error", (error: unknown, deviceId?: string) =>
